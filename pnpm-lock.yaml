@@ -65,6 +65,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
+      ts-duration:
+        specifier: ^1.1.0
+        version: 1.1.0
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.0.3(@types/react@19.0.7))(@types/react@19.0.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -2577,6 +2580,9 @@ packages:
     engines: {node: '>=18.12'}
     peerDependencies:
       typescript: '>=4.8.4'
+
+  ts-duration@1.1.0:
+    resolution: {integrity: sha512-Of6c/pxDD8bpVoxKjd3mjozyozJmOjGAi/bb1VRW6Pfhu3lTqjCWhKi7IW+PX+j0ZgO7NQ6yo/BkP7MgM/xhOA==}
 
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
@@ -5125,6 +5131,8 @@ snapshots:
   ts-api-utils@2.0.0(typescript@5.7.3):
     dependencies:
       typescript: 5.7.3
+
+  ts-duration@1.1.0: {}
 
   ts-interface-checker@0.1.13: {}
 
