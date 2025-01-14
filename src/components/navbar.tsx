@@ -8,17 +8,19 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { Menu } from "lucide-react";
+import { Menu, Music } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
+const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=http://localhost:3000/api/auth`;
 
 function NavContent() {
   return (
     <>
-      <Button variant="link" className="text-secondary">
-        <Link href="/login">Login</Link>
-      </Button>
-      <Button size="lg" variant="secondary">
-        <Link href="/signup">Sign up</Link>
+      <Button size="lg">
+        <Link href={lastFMOAuthURL} className="flex items-center space-x-2">
+          <Music />
+          <span>Connect Last.fm</span>
+        </Link>
       </Button>
     </>
   );
