@@ -13,11 +13,11 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 function NavContent() {
   return (
     <>
-      <Button variant="link">
+      <Button variant="link" className="text-secondary">
         <Link href="/login">Login</Link>
       </Button>
       <Button variant="secondary">
-        <Link href="/login">Sign up</Link>
+        <Link href="/signup">Sign up</Link>
       </Button>
     </>
   );
