@@ -90,7 +90,7 @@ export async function Navbar() {
     lastFMToken: cookieStore.get("token"),
   };
 
-  const authenticatedMenus = [
+  const authenticatedMenus: NavDrawerLinkProps[] = [
     {
       displayName: "Settings",
       href: "settings",
@@ -148,7 +148,7 @@ export async function Navbar() {
           <span className="font-bold text-secondary">LastCommunity</span>
         </Link>
         <div className="space-x-4 hidden md:block">
-          {generalMenus.map(
+          {[...generalMenus, ...authenticatedMenus].map(
             ({ href, highlight, displayName, smallDeviceOnly }) =>
               !smallDeviceOnly && (
                 <Button
