@@ -6,6 +6,7 @@ import {
   DrawerContent,
   DrawerTrigger,
   DrawerTitle,
+  DrawerFooter,
 } from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -16,7 +17,7 @@ function NavContent() {
       <Button variant="link" className="text-secondary">
         <Link href="/login">Login</Link>
       </Button>
-      <Button variant="secondary">
+      <Button size="lg" variant="secondary">
         <Link href="/signup">Sign up</Link>
       </Button>
     </>
@@ -42,7 +43,7 @@ export function Navbar() {
                 <Menu className="text-secondary" />
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="h-full w-10/12 rounded-none">
+            <DrawerContent className="h-full w-10/12 rounded-none bg-secondary-foreground">
               <VisuallyHidden>
                 <DrawerHeader>
                   <VisuallyHidden>
@@ -50,9 +51,9 @@ export function Navbar() {
                   </VisuallyHidden>
                 </DrawerHeader>
               </VisuallyHidden>
-              <div className="flex flex-col">
+              <DrawerFooter>
                 <NavContent />
-              </div>
+              </DrawerFooter>
             </DrawerContent>
           </Drawer>
         </div>
