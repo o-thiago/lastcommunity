@@ -1,7 +1,20 @@
-import { integer, text, boolean, pgTable } from "drizzle-orm/pg-core";
+import { integer, pgTable, uuid, timestamp } from "drizzle-orm/pg-core";
 
-export const todo = pgTable("todo", {
+const incrementalId = () => ({
   id: integer("id").primaryKey(),
-  text: text("text").notNull(),
-  done: boolean("done").default(false).notNull(),
+});
+
+const createdAt = () => ({
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const session = pgTable("session", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: integer("userid").notNull(),
+  ...createdAt(),
+});
+
+export const user = pgTable("user", {
+  ...incrementalId(),
+  ...createdAt(),
 });
