@@ -1,4 +1,4 @@
-import { integer, pgTable, uuid, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, uuid, timestamp, text } from "drizzle-orm/pg-core";
 
 const incrementalId = () => ({
   id: integer("id").primaryKey(),
@@ -15,6 +15,9 @@ export const session = pgTable("session", {
 });
 
 export const user = pgTable("user", {
+  lastFMId: text().notNull(),
+  state: text().notNull(),
+  city: text().notNull(),
   ...incrementalId(),
   ...createdAt(),
 });

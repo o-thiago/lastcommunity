@@ -8,8 +8,9 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { Menu, Music } from "lucide-react";
+import { VerifiedIcon, Menu, Music } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { cookies } from "next/headers";
 
 const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=http://localhost:3000/api/auth`;
 
@@ -26,25 +27,27 @@ function NavContent() {
   );
 }
 
-export function Navbar() {
+const UserIcon = async () => {
+  const cookieStore = await cookies();
+  const lastFMToken = cookieStore.get("token");
+
+  return <>{lastFMToken && <VerifiedIcon />}</>;
+};
+
+export async function Navbar() {
   return (
     <header className="w-full border-b bg-secondary-foreground">
-      <div className="flex items-center justify-between p-4">
-        <Link href="/" className="flex items-center">
-          <span className="hidden font-bold sm:inline-block text-secondary">
-            LastCommunity
-          </span>
-        </Link>
-        <div className="justify-between space-x-4 hidden md:block">
-          <NavContent />
-        </div>
+      <div className="flex w-full justify-between items-center p-2">
         <div className="md:hidden">
           <Drawer direction="left">
-            <DrawerTrigger asChild>
-              <Button variant="ghost">
-                <Menu className="text-secondary" />
-              </Button>
-            </DrawerTrigger>
+            <div className="flex items-center space-x-2 text-secondary">
+              <DrawerTrigger asChild>
+                <Button variant="ghost">
+                  <Menu />
+                </Button>
+              </DrawerTrigger>
+              <UserIcon />
+            </div>
             <DrawerContent className="h-full w-10/12 rounded-none bg-secondary-foreground">
               <VisuallyHidden>
                 <DrawerHeader>
@@ -58,6 +61,12 @@ export function Navbar() {
               </DrawerFooter>
             </DrawerContent>
           </Drawer>
+        </div>
+        <Link href="/" className="flex ">
+          <span className="font-bold text-secondary">LastCommunity</span>
+        </Link>
+        <div className="space-x-4 hidden md:block">
+          <NavContent />
         </div>
       </div>
     </header>
