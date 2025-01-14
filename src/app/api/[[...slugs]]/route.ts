@@ -1,6 +1,8 @@
 // app/api/[[...slugs]]/route.ts
 import { Elysia, t } from "elysia";
+import { Duration } from "ts-duration";
 import { NextResponse } from "next/server";
+import { setCookie } from "cookies-next";
 
 const getFullUrl = (subRoute: string = "") =>
   `http://localhost:3000/${subRoute}`;
@@ -8,15 +10,20 @@ const getFullUrl = (subRoute: string = "") =>
 const app = new Elysia({ prefix: "/api" })
   .get(
     "/auth",
-    ({ query, cookie: { token: storedCookie } }) => {
+    async ({ query }) => {
+      const res = NextResponse.redirect(getFullUrl());
+
       if (query.token) {
-        storedCookie.value = query.token;
-        storedCookie.secure = true;
-        storedCookie.sameSite = true;
-        storedCookie.httpOnly = true;
+        await setCookie("token", query.token, {
+          secure: true,
+          sameSite: true,
+          httpOnly: true,
+          maxAge: Duration.hour(24).seconds,
+          res,
+        });
       }
 
-      return NextResponse.redirect(getFullUrl());
+      return res;
     },
     {
       query: t.Object({

@@ -41,9 +41,9 @@ function NavContent({ lastFMToken }: InnerNavProps) {
   return (
     <>
       {lastFMToken ? (
-        <IconButton Icon={<Music />} text="Login with Last.fm" />
-      ) : (
         <IconButton Icon={<KeyboardMusic />} text="Logout" />
+      ) : (
+        <IconButton Icon={<Music />} text="Login with Last.fm" />
       )}
     </>
   );
