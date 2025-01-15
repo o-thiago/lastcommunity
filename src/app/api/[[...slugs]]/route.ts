@@ -8,3 +8,5 @@ const rootRoute = new Elysia().use(apiRoute);
 
 export const GET = rootRoute.handle;
 export const POST = rootRoute.handle;
+
+export type LastCommunityAPI = typeof rootRoute;

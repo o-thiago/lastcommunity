@@ -11,6 +11,7 @@ const createdAt = () => ({
 export const session = pgTable("session", {
   id: uuid().primaryKey().defaultRandom(),
   userId: integer("userid").notNull(),
+  lastFMToken: text("last_fm_token").notNull(),
   ...createdAt(),
 });
 

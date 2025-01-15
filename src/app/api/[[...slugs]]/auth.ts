@@ -2,9 +2,14 @@ import Elysia, { t } from "elysia";
 import { Duration } from "ts-duration";
 import { getFullUrl } from "@/lib/utils";
 import { NextResponse } from "next/server";
-import { authorizationLayer, simpleResponseLayer } from "./utils";
+import {
+  authorizationLayer,
+  databaseAccessLayer,
+  simpleResponseLayer,
+} from "./utils";
 
 export const elysiaAuth = new Elysia({ prefix: "/auth" })
+  .use(databaseAccessLayer)
   .use(simpleResponseLayer)
   .use(authorizationLayer)
   .get(

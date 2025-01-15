@@ -1,3 +1,4 @@
+import { db } from "@/db/drizzle";
 import Elysia from "elysia";
 
 export const authorizationLayer = new Elysia()
@@ -13,3 +14,5 @@ export const simpleResponseLayer = new Elysia()
     NOT_AUTHORIZED: "Unauthorized",
   })
   .as("plugin");
+
+export const databaseAccessLayer = new Elysia().decorate("db", db);
