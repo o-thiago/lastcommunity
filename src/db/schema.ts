@@ -1,24 +1,17 @@
-import { integer, pgTable, uuid, timestamp, text } from "drizzle-orm/pg-core";
-
-const incrementalId = () => ({
-  id: integer("id").primaryKey(),
-});
+import { pgTable, timestamp, text } from "drizzle-orm/pg-core";
 
 const createdAt = () => ({
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const session = pgTable("session", {
-  id: uuid().primaryKey().defaultRandom(),
-  userId: integer("userid").notNull(),
-  lastFMToken: text("last_fm_token").notNull(),
+  lastFMSessionKey: text("last_fm_session_key").primaryKey(),
   ...createdAt(),
 });
 
 export const user = pgTable("user", {
-  lastFMId: text().notNull(),
-  state: text(),
-  city: text(),
-  ...incrementalId(),
+  lastFMId: text("last_fm_id").primaryKey(),
+  state: text("state"),
+  city: text("city"),
   ...createdAt(),
 });
