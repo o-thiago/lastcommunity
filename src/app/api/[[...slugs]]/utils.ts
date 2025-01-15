@@ -1,6 +1,8 @@
 import { db } from "@/db/drizzle";
 import LastFMTyped from "lastfm-typed";
 import Elysia, { t } from "elysia";
+import { NextResponse } from "next/server";
+import { getFullUrl } from "@/lib/utils";
 
 export const authorizationLayer = new Elysia()
   .guard({
@@ -30,3 +32,13 @@ export const lastFMApiLayer = new Elysia().decorate(
     apiSecret: process.env.LASTFM_SHARED_SECRET!,
   }),
 );
+
+export const redirectLayer = new Elysia()
+  .decorate("nextRedirect", (url: string = "") => {
+    if (["https://", "http://"].map((s) => url.startsWith(s)).includes(true)) {
+      return NextResponse.redirect(url);
+    }
+
+    return NextResponse.redirect(getFullUrl(url));
+  })
+  .as("plugin");

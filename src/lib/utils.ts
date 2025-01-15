@@ -6,4 +6,4 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getFullUrl = (subRoute: string = "") =>
-  `http://localhost:3000/${subRoute}`;
+  `http://localhost:3000${subRoute}`;
