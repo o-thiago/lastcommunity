@@ -17,8 +17,8 @@ export const session = pgTable("session", {
 
 export const user = pgTable("user", {
   lastFMId: text().notNull(),
-  state: text().notNull(),
-  city: text().notNull(),
+  state: text(),
+  city: text(),
   ...incrementalId(),
   ...createdAt(),
 });
