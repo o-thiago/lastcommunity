@@ -24,7 +24,7 @@
               with pkgs;
               [
                 nixfmt-rfc-style
-                pnpm
+                bun
               ]
             );
           };
