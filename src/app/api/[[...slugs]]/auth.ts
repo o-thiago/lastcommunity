@@ -15,11 +15,6 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(simpleResponseLayer)
   .use(authorizationLayer)
   .use(lastFMApiLayer)
-  .guard({
-    cookie: t.Cookie({
-      session: t.Optional(t.String()),
-    }),
-  })
   .get(
     "/login",
     async ({ query, cookie, responses, browserUser, lastFMApi, db }) => {
@@ -30,9 +25,12 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
         usernameOrSessionKey: lastFMSession.key,
       });
 
-      await db.insert(lastCommunityUser).values({
-        lastFMId: userInfo.name,
-      });
+      await db
+        .insert(lastCommunityUser)
+        .values({
+          lastFMId: userInfo.name,
+        })
+        .onConflictDoNothing();
 
       cookie.session.set({
         value: lastFMSession.key,
@@ -49,7 +47,7 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       }),
     },
   )
-  .post("logout", async ({ cookie, browserUser, responses }) => {
+  .post("logout", async ({ cookie, browserUser, responses, set }) => {
     if (!browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
 
     cookie.session.remove();

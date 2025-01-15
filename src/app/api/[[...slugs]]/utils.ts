@@ -1,8 +1,13 @@
 import { db } from "@/db/drizzle";
 import LastFMTyped from "lastfm-typed";
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 
 export const authorizationLayer = new Elysia()
+  .guard({
+    cookie: t.Cookie({
+      session: t.Optional(t.String()),
+    }),
+  })
   .derive(async ({ cookie }) => ({
     browserUser: {
       lastFMSession: cookie.session.value,
