@@ -26,8 +26,10 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       });
 
       await db.transaction(async (tx) => {
-        tx.insert(session).values({ lastFMSessionKey: lastFMSession.key });
-        tx.insert(user).values({
+        await tx
+          .insert(session)
+          .values({ lastFMSessionKey: lastFMSession.key });
+        await tx.insert(user).values({
           lastFMId: userInfo.name,
         });
       });
@@ -50,6 +52,6 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .get("logout", async ({ cookie, browserUser, responses }) => {
     if (!browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
 
-    cookie.token.remove();
+    cookie.session.remove();
     return NextResponse.redirect(getFullUrl());
   });
