@@ -4,13 +4,7 @@ import { elysiaAuth } from "./auth";
 
 const apiRoute = new Elysia({ prefix: "/api" }).use(elysiaAuth);
 
-const rootRoute = new Elysia()
-  .derive(async ({ cookie }) => {
-    return {
-      token: cookie.token.value,
-    };
-  })
-  .use(apiRoute);
+const rootRoute = new Elysia().use(apiRoute);
 
 export const GET = rootRoute.handle;
 export const POST = rootRoute.handle;

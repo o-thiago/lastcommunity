@@ -9,8 +9,8 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(authorizationLayer)
   .get(
     "/login",
-    async ({ query, cookie: { token: storeCookie }, responses }) => {
-      if (query.token) return responses.NOT_AUTHORIZED;
+    async ({ query, cookie: { token: storeCookie }, responses, user }) => {
+      if (user.lastFMToken) return responses.NOT_AUTHORIZED;
 
       storeCookie.set({
         value: query.token,
@@ -27,9 +27,9 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       }),
     },
   )
-  .get("logout", async ({ redirect, cookie, token, responses }) => {
-    if (!token) return responses.NOT_AUTHORIZED;
+  .get("logout", async ({ cookie, user, responses }) => {
+    if (!user.lastFMToken) return responses.NOT_AUTHORIZED;
 
     cookie.token.remove();
-    return redirect(getFullUrl());
+    return NextResponse.redirect(getFullUrl());
   });

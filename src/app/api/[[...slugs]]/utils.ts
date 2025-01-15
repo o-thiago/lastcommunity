@@ -2,7 +2,9 @@ import Elysia from "elysia";
 
 export const authorizationLayer = new Elysia()
   .derive(async ({ cookie }) => ({
-    token: cookie.token.value,
+    user: {
+      lastFMToken: cookie.token.value,
+    },
   }))
   .as("plugin");
 
