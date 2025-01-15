@@ -30,6 +30,7 @@
               port = 5433;
               initialScript.before = ''
                 CREATE USER root WITH password 'root';
+                ALTER USER root WITH SUPERUSER;
               '';
               initialDatabases = [
                 {

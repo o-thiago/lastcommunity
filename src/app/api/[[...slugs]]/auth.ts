@@ -8,13 +8,18 @@ import {
   lastFMApiLayer,
   simpleResponseLayer,
 } from "./utils";
-import { user } from "@/db/schema";
+import { lastCommunityUser } from "@/db/schema";
 
 export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(databaseAccessLayer)
   .use(simpleResponseLayer)
   .use(authorizationLayer)
   .use(lastFMApiLayer)
+  .guard({
+    cookie: t.Cookie({
+      session: t.Optional(t.String()),
+    }),
+  })
   .get(
     "/login",
     async ({ query, cookie, responses, browserUser, lastFMApi, db }) => {
@@ -25,7 +30,7 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
         usernameOrSessionKey: lastFMSession.key,
       });
 
-      await db.insert(user).values({
+      await db.insert(lastCommunityUser).values({
         lastFMId: userInfo.name,
       });
 
