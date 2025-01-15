@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { VerifiedIcon, Menu, Music, Music2 } from "lucide-react";
+import { VerifiedIcon, Menu, Music } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cookies } from "next/headers";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
@@ -22,19 +22,12 @@ type InnerNavProps = {
   lastFMSession: RequestCookie | undefined;
 };
 
-function IconButton({
-  Icon,
-  text,
-  href,
-  ...props
-}: ButtonProps & { Icon: ReactNode; text: string; href: string }) {
+function IconLabeledSpan({ Icon, text }: { Icon: ReactNode; text: string }) {
   return (
-    <Button size="lg" {...props} asChild>
-      <Link href={href} className="flex items-center space-x-2">
-        {Icon}
-        <span>{text}</span>
-      </Link>
-    </Button>
+    <>
+      {Icon}
+      <span>{text}</span>
+    </>
   );
 }
 
@@ -42,13 +35,17 @@ function NavContent({ lastFMSession }: InnerNavProps) {
   return (
     <>
       {lastFMSession ? (
-        <IconButton href={"/api/auth/logout"} Icon={<Music2 />} text="Logout" />
+        <form action={"/api/auth/logout"} className="w-full" method="post">
+          <Button type="submit" className="w-full">
+            <IconLabeledSpan Icon={<Music />} text="Logout" />
+          </Button>
+        </form>
       ) : (
-        <IconButton
-          href={lastFMOAuthURL}
-          Icon={<Music />}
-          text="Login with Last.fm"
-        />
+        <Button asChild>
+          <Link href={lastFMOAuthURL}>
+            <IconLabeledSpan text="Login with Last.fm" Icon={<Music />} />
+          </Link>
+        </Button>
       )}
     </>
   );
@@ -152,7 +149,7 @@ export async function Navbar() {
         <Link href="/" className="flex ">
           <span className="font-bold text-secondary">LastCommunity</span>
         </Link>
-        <div className="space-x-4 hidden md:block">
+        <div className="space-x-4 hidden md:flex">
           {[...generalMenus, ...authenticatedMenus].map(
             ({ href, highlight, displayName, smallDeviceOnly }) =>
               !smallDeviceOnly && (

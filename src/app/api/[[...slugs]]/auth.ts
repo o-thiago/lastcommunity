@@ -47,8 +47,9 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       }),
     },
   )
-  .post("logout", async ({ cookie, browserUser, responses, set }) => {
+  .post("logout", async ({ cookie, browserUser, responses }) => {
     if (!browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
 
     cookie.session.remove();
+    return NextResponse.redirect(getFullUrl());
   });
