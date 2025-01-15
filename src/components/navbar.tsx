@@ -8,15 +8,15 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { VerifiedIcon, Menu, Music, KeyboardMusic } from "lucide-react";
+import { VerifiedIcon, Menu, Music, Music2 } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cookies } from "next/headers";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { Separator } from "@/components/ui/separator";
 import { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { cn, getFullUrl } from "@/lib/utils";
 
-const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=http://localhost:3000/api/auth`;
+const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/login")}`;
 
 type InnerNavProps = {
   lastFMToken: RequestCookie | undefined;
@@ -25,11 +25,12 @@ type InnerNavProps = {
 function IconButton({
   Icon,
   text,
+  href,
   ...props
-}: ButtonProps & { Icon: ReactNode; text: string }) {
+}: ButtonProps & { Icon: ReactNode; text: string; href: string }) {
   return (
     <Button size="lg" {...props}>
-      <Link href={lastFMOAuthURL} className="flex items-center space-x-2">
+      <Link href={href} className="flex items-center space-x-2">
         {Icon}
         <span>{text}</span>
       </Link>
@@ -41,9 +42,13 @@ function NavContent({ lastFMToken }: InnerNavProps) {
   return (
     <>
       {lastFMToken ? (
-        <IconButton Icon={<KeyboardMusic />} text="Logout" />
+        <IconButton href={"/api/auth/logout"} Icon={<Music2 />} text="Logout" />
       ) : (
-        <IconButton Icon={<Music />} text="Login with Last.fm" />
+        <IconButton
+          href={lastFMOAuthURL}
+          Icon={<Music />}
+          text="Login with Last.fm"
+        />
       )}
     </>
   );
