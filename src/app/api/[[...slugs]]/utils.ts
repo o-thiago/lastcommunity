@@ -4,7 +4,7 @@ import Elysia, { t } from "elysia";
 import { NextResponse } from "next/server";
 import { getFullUrl } from "@/lib/utils";
 
-export const authorizationLayer = new Elysia()
+export const lastCommunityLayer = new Elysia()
   .guard({
     cookie: t.Cookie({
       session: t.Optional(t.String()),
@@ -15,25 +15,17 @@ export const authorizationLayer = new Elysia()
       lastFMSession: cookie.session.value,
     },
   }))
-  .as("plugin");
-
-export const simpleResponseLayer = new Elysia()
   .decorate("responses", {
     NOT_AUTHORIZED: "Unauthorized",
     INTERNAL_ERROR: "Internal server error",
   })
-  .as("plugin");
-
-export const databaseAccessLayer = new Elysia().decorate("db", db);
-
-export const lastFMApiLayer = new Elysia().decorate(
-  "lastFMApi",
-  new LastFMTyped(process.env.LASTFM_API!, {
-    apiSecret: process.env.LASTFM_SHARED_SECRET!,
-  }),
-);
-
-export const redirectLayer = new Elysia()
+  .decorate("db", db)
+  .decorate(
+    "lastFMApi",
+    new LastFMTyped(process.env.LASTFM_API!, {
+      apiSecret: process.env.LASTFM_SHARED_SECRET!,
+    }),
+  )
   .decorate("nextRedirect", (url: string = "") => {
     if (["https://", "http://"].map((s) => url.startsWith(s)).includes(true)) {
       return NextResponse.redirect(url);
@@ -41,4 +33,5 @@ export const redirectLayer = new Elysia()
 
     return NextResponse.redirect(getFullUrl(url));
   })
+
   .as("plugin");

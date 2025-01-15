@@ -1,10 +1,10 @@
 import { Elysia } from "elysia";
 import { elysiaAuth } from "./auth";
-import { simpleResponseLayer } from "./utils";
+import { lastCommunityLayer } from "./utils";
 
 const apiRoute = new Elysia({ prefix: "/api" }).use(elysiaAuth);
 const rootRoute = new Elysia()
-  .use(simpleResponseLayer)
+  .use(lastCommunityLayer)
   .onError(({ error, code, responses }) => {
     console.error({ error, code });
     return {

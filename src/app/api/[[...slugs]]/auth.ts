@@ -1,21 +1,11 @@
 import Elysia, { t } from "elysia";
 import { Duration } from "ts-duration";
-import {
-  authorizationLayer,
-  databaseAccessLayer,
-  lastFMApiLayer,
-  redirectLayer,
-  simpleResponseLayer,
-} from "./utils";
 import { lastCommunityUser } from "@/db/schema";
 import { sql } from "drizzle-orm";
+import { lastCommunityLayer } from "./utils";
 
 export const elysiaAuth = new Elysia({ prefix: "/auth" })
-  .use(databaseAccessLayer)
-  .use(simpleResponseLayer)
-  .use(authorizationLayer)
-  .use(lastFMApiLayer)
-  .use(redirectLayer)
+  .use(lastCommunityLayer)
   .get(
     "/login",
     async ({ query, cookie, browserUser, lastFMApi, db, nextRedirect }) => {
@@ -58,9 +48,10 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       }),
     },
   )
-  .post("logout", async ({ cookie, browserUser, responses, nextRedirect }) => {
-    if (!browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
+  .post("logout", async ({ cookie, browserUser, nextRedirect }) => {
+    if (browserUser.lastFMSession) {
+      cookie.session.remove();
+    }
 
-    cookie.session.remove();
     return nextRedirect();
   });
