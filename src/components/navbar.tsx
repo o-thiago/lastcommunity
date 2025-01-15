@@ -19,7 +19,7 @@ import { cn, getFullUrl } from "@/lib/utils";
 const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/login")}`;
 
 type InnerNavProps = {
-  lastFMToken: RequestCookie | undefined;
+  lastFMSession: RequestCookie | undefined;
 };
 
 function IconButton({
@@ -29,7 +29,7 @@ function IconButton({
   ...props
 }: ButtonProps & { Icon: ReactNode; text: string; href: string }) {
   return (
-    <Button size="lg" {...props}>
+    <Button size="lg" {...props} asChild>
       <Link href={href} className="flex items-center space-x-2">
         {Icon}
         <span>{text}</span>
@@ -38,10 +38,10 @@ function IconButton({
   );
 }
 
-function NavContent({ lastFMToken }: InnerNavProps) {
+function NavContent({ lastFMSession }: InnerNavProps) {
   return (
     <>
-      {lastFMToken ? (
+      {lastFMSession ? (
         <IconButton href={"/api/auth/logout"} Icon={<Music2 />} text="Logout" />
       ) : (
         <IconButton
@@ -54,8 +54,8 @@ function NavContent({ lastFMToken }: InnerNavProps) {
   );
 }
 
-const UserIcon = async ({ lastFMToken }: InnerNavProps) => {
-  return <>{lastFMToken && <VerifiedIcon />}</>;
+const UserIcon = async ({ lastFMSession }: InnerNavProps) => {
+  return <>{lastFMSession && <VerifiedIcon />}</>;
 };
 
 type NavDrawerLinkProps = {
@@ -71,11 +71,11 @@ const NavDrawerLink = ({
   href,
   highlight,
   requiresAuth,
-  lastFMToken,
+  lastFMSession,
 }: NavDrawerLinkProps & InnerNavProps) => {
   return (
     <div>
-      {((requiresAuth && lastFMToken) || !requiresAuth) && (
+      {((requiresAuth && lastFMSession) || !requiresAuth) && (
         <Link href={href}>
           <div className="text-start p-4 hover:bg-secondary/10">
             <span className={cn(highlight && "text-yellow-400")}>
@@ -92,7 +92,7 @@ const NavDrawerLink = ({
 export async function Navbar() {
   const cookieStore = await cookies();
   const innerNavProps: InnerNavProps = {
-    lastFMToken: cookieStore.get("token"),
+    lastFMSession: cookieStore.get("session"),
   };
 
   const authenticatedMenus: NavDrawerLinkProps[] = [
@@ -160,6 +160,7 @@ export async function Navbar() {
                   variant="ghost"
                   className="hover:bg-secondary/10"
                   key={href}
+                  asChild
                 >
                   <Link href={href}>
                     <span
