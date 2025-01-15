@@ -8,7 +8,7 @@ import {
   lastFMApiLayer,
   simpleResponseLayer,
 } from "./utils";
-import { session, user } from "@/db/schema";
+import { user } from "@/db/schema";
 
 export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(databaseAccessLayer)
@@ -25,17 +25,12 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
         usernameOrSessionKey: lastFMSession.key,
       });
 
-      await db.transaction(async (tx) => {
-        await tx
-          .insert(session)
-          .values({ lastFMSessionKey: lastFMSession.key });
-        await tx.insert(user).values({
-          lastFMId: userInfo.name,
-        });
+      await db.insert(user).values({
+        lastFMId: userInfo.name,
       });
 
       cookie.session.set({
-        value: query.token,
+        value: lastFMSession.key,
         httpOnly: true,
         secure: true,
         maxAge: Duration.hour(24 * 30).seconds,
@@ -49,9 +44,8 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       }),
     },
   )
-  .get("logout", async ({ cookie, browserUser, responses }) => {
+  .post("logout", async ({ cookie, browserUser, responses }) => {
     if (!browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
 
     cookie.session.remove();
-    return NextResponse.redirect(getFullUrl());
   });
