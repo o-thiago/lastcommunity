@@ -5,23 +5,38 @@ import { NextResponse } from "next/server";
 import {
   authorizationLayer,
   databaseAccessLayer,
+  lastFMApiLayer,
   simpleResponseLayer,
 } from "./utils";
+import { session, user } from "@/db/schema";
 
 export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(databaseAccessLayer)
   .use(simpleResponseLayer)
   .use(authorizationLayer)
+  .use(lastFMApiLayer)
   .get(
     "/login",
-    async ({ query, cookie: { token: storeCookie }, responses, user }) => {
-      if (user.lastFMToken) return responses.NOT_AUTHORIZED;
+    async ({ query, cookie, responses, browserUser, lastFMApi, db }) => {
+      if (browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
 
-      storeCookie.set({
+      const lastFMSession = await lastFMApi.auth.getSession(query.token);
+      const userInfo = await lastFMApi.user.getInfo({
+        usernameOrSessionKey: lastFMSession.key,
+      });
+
+      await db.transaction(async (tx) => {
+        tx.insert(session).values({ lastFMSessionKey: lastFMSession.key });
+        tx.insert(user).values({
+          lastFMId: userInfo.name,
+        });
+      });
+
+      cookie.session.set({
         value: query.token,
         httpOnly: true,
         secure: true,
-        maxAge: Duration.hour(24).seconds,
+        maxAge: Duration.hour(24 * 30).seconds,
       });
 
       return NextResponse.redirect(getFullUrl());
@@ -32,8 +47,8 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
       }),
     },
   )
-  .get("logout", async ({ cookie, user, responses }) => {
-    if (!user.lastFMToken) return responses.NOT_AUTHORIZED;
+  .get("logout", async ({ cookie, browserUser, responses }) => {
+    if (!browserUser.lastFMSession) return responses.NOT_AUTHORIZED;
 
     cookie.token.remove();
     return NextResponse.redirect(getFullUrl());
