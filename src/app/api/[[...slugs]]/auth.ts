@@ -16,7 +16,8 @@ export const elysiaLoginSessionHandler = new Elysia()
       developmentUser,
     }) => {
       async function getLoggedUserFromSession() {
-        if (!browserUser.lastFMSession) throw responses.NOT_AUTHORIZED;
+        if (!browserUser.lastFMSession && !isDevelopment)
+          throw responses.NOT_AUTHORIZED;
 
         return {
           // This assures the session is valid, if it isn't it will throw an error.
@@ -89,12 +90,12 @@ const elysiaLoginHandler = new Elysia()
         return await handleLogin(developmentUser);
       }
 
-      const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/save-session")}`;
+      const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/save_session")}`;
       return nextRedirect(lastFMOAuthURL);
     },
   )
   .post(
-    "/save-session",
+    "/save_session",
     async ({ handleLogin, lastFMApi, query, cookie }) => {
       const lastFMSession = await lastFMApi.auth.getSession(query.token);
       const response = await handleLogin(lastFMSession.key);
@@ -118,7 +119,13 @@ const elysiaLoginHandler = new Elysia()
 export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(lastCommunityLayer)
   .use(elysiaLoginHandler)
-  .get("logout", async ({ cookie, nextRedirect }) => {
+  .use(elysiaLoginSessionHandler)
+  .get("/validate_session", async ({ isUserSessionValid, responses }) => {
+    if (!(await isUserSessionValid())) {
+      throw responses.NOT_AUTHORIZED;
+    }
+  })
+  .post("logout", async ({ cookie, nextRedirect }) => {
     cookie.session.remove();
     return nextRedirect();
   });
