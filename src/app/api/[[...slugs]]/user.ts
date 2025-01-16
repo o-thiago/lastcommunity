@@ -1,8 +1,9 @@
-import Elysia, { t } from "elysia";
 import { lastCommunityLayer } from "./utils";
 import { lastCommunityUser } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { elysiaLoginSessionHandler } from "./auth";
+import Elysia from "elysia";
+import { elysiaSchemas } from "./schemas";
 
 export const elysiaUser = new Elysia({ prefix: "/user" })
   .use(lastCommunityLayer)
@@ -22,9 +23,6 @@ export const elysiaUser = new Elysia({ prefix: "/user" })
         .where(eq(lastCommunityUser.name, loggedUser.name));
     },
     {
-      body: t.Object({
-        city: t.Optional(t.String()),
-        state: t.Optional(t.String()),
-      }),
+      body: elysiaSchemas.users.settings,
     },
   );

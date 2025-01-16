@@ -2,8 +2,9 @@ import Elysia, { t } from "elysia";
 import { Duration } from "ts-duration";
 import { lastCommunityUser } from "@/db/schema";
 import { sql } from "drizzle-orm";
-import { lastCommunityLayer, schemas } from "./utils";
+import { lastCommunityLayer } from "./utils";
 import { getFullUrl } from "@/lib/utils";
+import { elysiaSchemas } from "./schemas";
 
 let isTestModeLoggedIn = false;
 
@@ -119,7 +120,7 @@ const elysiaLoginHandler = new Elysia()
     },
     {
       query: t.Object({
-        token: schemas.lastFMSessionKey,
+        token: elysiaSchemas.login.lastFMSessionKey,
       }),
     },
   );

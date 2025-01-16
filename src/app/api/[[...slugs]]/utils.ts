@@ -3,17 +3,14 @@ import LastFMTyped from "lastfm-typed";
 import Elysia, { t } from "elysia";
 import { NextResponse } from "next/server";
 import { getFullUrl } from "@/lib/utils";
-
-export const schemas = {
-  lastFMSessionKey: t.String({ maxLength: 32, minLength: 32 }),
-};
+import { elysiaSchemas } from "./schemas";
 
 const isDevelopment = process.env.NODE_ENV == "development";
 
 export const lastCommunityLayer = new Elysia()
   .guard({
     cookie: t.Cookie({
-      session: t.Optional(schemas.lastFMSessionKey),
+      session: t.Optional(elysiaSchemas.login.lastFMSessionKey),
     }),
   })
   .derive(async ({ cookie }) => ({
