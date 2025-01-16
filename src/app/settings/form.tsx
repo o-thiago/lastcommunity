@@ -12,30 +12,61 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { api } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { State, City } from "country-state-city";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { SelectProps, SelectValueProps } from "@radix-ui/react-select";
+import { useEffect } from "react";
 
 type UserSettingSchema = Static<typeof elysiaSchemas.users.settings>;
 
-function SettingsField({
+function SettingsField<T extends { name: string; code: string }>({
   formControl,
   name,
+  geoObjects,
+  currentValue,
+  selectValueProps,
+  ...selectProps
 }: {
   formControl: Control<UserSettingSchema>;
   name: keyof UserSettingSchema;
-}) {
+  currentValue: string;
+  geoObjects: T[];
+  selectValueProps?: SelectValueProps;
+} & SelectProps) {
   return (
     <FormField
       control={formControl}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem {...field}>
           <FormLabel>
             {name.charAt(0).toUpperCase() + name.substring(1)}
           </FormLabel>
           <FormControl>
-            <Input placeholder={`Your ${name}`} {...field} />
+            <Select {...selectProps}>
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={
+                    currentValue == "" ? `Your ${name}` : currentValue
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent className="max-h-80">
+                {Object.values(geoObjects).map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormControl>
         </FormItem>
       )}
@@ -66,14 +97,36 @@ export function SettingsForm({
     });
   }
 
+  useEffect(() => {
+    form.setValue("city", "");
+  }, [form.watch("state")]);
+
+  const currentFormValues = form.getValues();
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8 p-4 rounded-b-lg"
       >
-        <SettingsField formControl={form.control} name="state" />
-        <SettingsField formControl={form.control} name="city" />
+        <SettingsField
+          formControl={form.control}
+          currentValue={State.getStateByCodeAndCountry(state, "BR")?.name || ""}
+          name="state"
+          geoObjects={State.getStatesOfCountry("BR").map(({ name, ...s }) => ({
+            name,
+            code: s.isoCode,
+          }))}
+        />
+        <SettingsField
+          formControl={form.control}
+          currentValue={currentFormValues.city}
+          name="city"
+          geoObjects={City.getCitiesOfState("BR", currentFormValues.state).map(
+            ({ name }) => ({ name, code: name }),
+          )}
+          disabled={currentFormValues.state == ""}
+        />
         <Button type="submit" className="w-full">
           Submit
         </Button>
