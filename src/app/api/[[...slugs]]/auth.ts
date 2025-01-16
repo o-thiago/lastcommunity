@@ -71,7 +71,7 @@ const elysiaLoginHandler = new Elysia()
             name: userInfo.name,
           })
           .onConflictDoUpdate({
-            set: { name: sql`excluded.last_fm_id` },
+            set: { name: sql`excluded.name` },
             target: lastCommunityUser.name,
           })
           .returning()
