@@ -12,9 +12,7 @@ import { VerifiedIcon, Menu, Music } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Separator } from "@/components/ui/separator";
 import { HTMLProps, ReactNode } from "react";
-import { cn, getFullUrl } from "@/lib/utils";
-import { treaty } from "@elysiajs/eden";
-import { LastCommunityAPI } from "@/app/api/[[...slugs]]/route";
+import { api, cn } from "@/lib/utils";
 
 type InnerNavProps = {
   lastFMSession: boolean;
@@ -90,7 +88,6 @@ const NavDrawerLink = ({
 };
 
 export async function Navbar() {
-  const { api } = treaty<LastCommunityAPI>(getFullUrl());
   const innerNavProps: InnerNavProps = {
     lastFMSession: !(await api.auth.validate_session.get()).error,
   };
