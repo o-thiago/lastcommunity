@@ -106,7 +106,7 @@ export async function Navbar() {
       href: "donate",
       highlight: true,
     },
-    { displayName: "Home", href: "", smallDeviceOnly: true },
+    { displayName: "Home", href: "/", smallDeviceOnly: true },
   ];
 
   return (
