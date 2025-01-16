@@ -3,8 +3,8 @@ import { t } from "elysia/type-system";
 export const elysiaSchemas = {
   users: {
     settings: t.Object({
-      city: t.Optional(t.String()),
-      state: t.Optional(t.String()),
+      city: t.String(),
+      state: t.String(),
     }),
   },
   login: {

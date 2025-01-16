@@ -5,15 +5,32 @@ import { elysiaLoginSessionHandler } from "./auth";
 import Elysia from "elysia";
 import { elysiaSchemas } from "./schemas";
 
+const isRecord = (o: unknown): o is Record<PropertyKey, unknown> =>
+  typeof o == "object";
+
+function deepReplaceDefaultsToUndefined<T extends Record<PropertyKey, unknown>>(
+  object: T,
+): T {
+  for (const key in Object.entries(object)) {
+    if (isRecord(object[key])) {
+      deepReplaceDefaultsToUndefined(object[key]);
+    } else if (object[key] == 0 || object[key] == "") {
+      object[key] = undefined;
+    }
+  }
+  return object;
+}
+
 export const elysiaUser = new Elysia({ prefix: "/user" })
   .use(lastCommunityLayer)
   .use(elysiaLoginSessionHandler)
   .derive(
     async ({ getLoggedUserFromSession }) => await getLoggedUserFromSession(),
   )
-  .get(
+  .post(
     "/settings",
-    async ({ body: { city, state }, db, loggedUser }) => {
+    async ({ body, db, loggedUser }) => {
+      const { city, state } = deepReplaceDefaultsToUndefined(body);
       await db
         .update(lastCommunityUser)
         .set({
