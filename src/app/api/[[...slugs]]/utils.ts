@@ -4,8 +4,13 @@ import Elysia, { t } from "elysia";
 import { NextResponse } from "next/server";
 import { getFullUrl } from "@/lib/utils";
 import { elysiaSchemas } from "./schemas";
+import memoize from "memoize";
+import { Duration } from "ts-duration";
 
 const isDevelopment = process.env.NODE_ENV == "development";
+const lastFMApi = new LastFMTyped(process.env.LASTFM_API!, {
+  apiSecret: process.env.LASTFM_SHARED_SECRET!,
+});
 
 export const lastCommunityLayer = new Elysia()
   .guard({
@@ -24,12 +29,14 @@ export const lastCommunityLayer = new Elysia()
     NOT_FOUND: "Resource not found.",
   })
   .decorate("db", db)
-  .decorate(
-    "lastFMApi",
-    new LastFMTyped(process.env.LASTFM_API!, {
-      apiSecret: process.env.LASTFM_SHARED_SECRET!,
-    }),
-  )
+  .decorate("lastFMApi", lastFMApi)
+  .decorate("memoize", {
+    lastFMApi: {
+      getUserInfo: memoize(lastFMApi.user.getInfo.bind(lastFMApi.user), {
+        maxAge: Duration.minute(30).milliseconds,
+      }),
+    },
+  })
   .decorate("nextRedirect", (url: string = "") => {
     if (["https://", "http://"].map((s) => url.startsWith(s)).includes(true)) {
       return NextResponse.redirect(url);

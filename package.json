@@ -29,6 +29,7 @@
     "elysia": "^1.2.10",
     "lastfm-typed": "^2.1.0",
     "lucide-react": "^0.471.1",
+    "memoize": "^10.0.0",
     "next": "15.1.4",
     "pg": "^8.13.1",
     "postgres": "^3.4.5",
