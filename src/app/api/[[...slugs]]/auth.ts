@@ -62,7 +62,6 @@ const elysiaLoginHandler = new Elysia()
   .use(lastCommunityLayer)
   .derive(({ memoize, db, nextRedirect }) => ({
     async handleLogin(usernameOrSessionKey: string) {
-      console.log(memoize);
       const userInfo = await memoize.lastFMApi.getUserInfo({
         usernameOrSessionKey,
       });
