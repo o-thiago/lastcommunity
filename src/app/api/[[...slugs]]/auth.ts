@@ -5,6 +5,8 @@ import { sql } from "drizzle-orm";
 import { lastCommunityLayer, schemas } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 
+let isDevelopmentLoggedIn = false;
+
 export const elysiaLoginSessionHandler = new Elysia()
   .use(lastCommunityLayer)
   .derive(
@@ -16,8 +18,12 @@ export const elysiaLoginSessionHandler = new Elysia()
       developmentUser,
     }) => {
       async function getLoggedUserFromSession() {
-        if (!browserUser.lastFMSession && !isDevelopment)
+        if (
+          (!browserUser.lastFMSession && !isDevelopment) ||
+          (isDevelopment && !isDevelopmentLoggedIn)
+        ) {
           throw responses.NOT_AUTHORIZED;
+        }
 
         return {
           // This assures the session is valid, if it isn't it will throw an error.
@@ -38,7 +44,7 @@ export const elysiaLoginSessionHandler = new Elysia()
         getLoggedUserFromSession,
         async isUserSessionValid() {
           try {
-            await getLoggedUserFromSession();
+            await getLoggedUserFromSession().catch();
             return true;
           } catch (e) {
             return false;
@@ -87,7 +93,9 @@ const elysiaLoginHandler = new Elysia()
     "/login",
     async ({ nextRedirect, handleLogin, developmentUser, isDevelopment }) => {
       if (isDevelopment) {
-        return await handleLogin(developmentUser);
+        return await handleLogin(developmentUser).finally(
+          () => (isDevelopmentLoggedIn = true),
+        );
       }
 
       const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/save_session")}`;
@@ -121,11 +129,11 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(elysiaLoginHandler)
   .use(elysiaLoginSessionHandler)
   .get("/validate_session", async ({ isUserSessionValid, responses }) => {
-    if (!(await isUserSessionValid())) {
-      throw responses.NOT_AUTHORIZED;
-    }
+    if (!(await isUserSessionValid())) throw responses.NOT_AUTHORIZED;
   })
   .post("logout", async ({ cookie, nextRedirect }) => {
     cookie.session.remove();
+    isDevelopmentLoggedIn = false;
+
     return nextRedirect();
   });
