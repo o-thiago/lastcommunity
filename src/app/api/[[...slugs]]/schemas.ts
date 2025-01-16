@@ -1,10 +1,12 @@
 import { t } from "elysia/type-system";
 
+const nonEmptyString = t.String({ minLength: 1 });
+
 export const elysiaSchemas = {
   users: {
     settings: t.Object({
-      city: t.String(),
-      state: t.String(),
+      city: nonEmptyString,
+      state: nonEmptyString,
     }),
   },
   login: {
