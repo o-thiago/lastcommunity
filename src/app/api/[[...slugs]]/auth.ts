@@ -5,7 +5,7 @@ import { sql } from "drizzle-orm";
 import { lastCommunityLayer } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 
-export const elysiaLoginHandler = new Elysia()
+const elysiaLoginHandler = new Elysia()
   .use(lastCommunityLayer)
   .derive(({ lastFMApi, db, nextRedirect }) => ({
     async handleLogin(usernameOrSessionKey: string) {
