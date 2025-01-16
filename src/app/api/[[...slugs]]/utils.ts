@@ -20,8 +20,9 @@ export const lastCommunityLayer = new Elysia()
     },
   }))
   .decorate("responses", {
-    NOT_AUTHORIZED: "Unauthorized",
-    INTERNAL_ERROR: "Internal server error",
+    NOT_AUTHORIZED: "Unauthorized.",
+    INTERNAL_ERROR: "Internal server error.",
+    NOT_FOUND: "Resource not found.",
   })
   .decorate("db", db)
   .decorate(

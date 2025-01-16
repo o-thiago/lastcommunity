@@ -39,11 +39,11 @@ function NavContent({ lastFMSession }: InnerNavProps) {
           </Button>
         </form>
       ) : (
-        <Button asChild>
-          <Link href={"/api/auth/login"}>
-            <IconLabeledSpan text="Login with Last.fm" Icon={<Music />} />
-          </Link>
-        </Button>
+        <form action={"/api/auth/login"} className="w-full" method="post">
+          <Button type="submit" className="w-full">
+            <IconLabeledSpan Icon={<Music />} text="Login with Last.FM" />
+          </Button>
+        </form>
       )}
     </>
   );

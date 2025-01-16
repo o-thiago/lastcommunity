@@ -5,7 +5,51 @@ import { sql } from "drizzle-orm";
 import { lastCommunityLayer, schemas } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 
+export const elysiaLoginSessionHandler = new Elysia()
+  .use(lastCommunityLayer)
+  .derive(
+    async ({
+      browserUser,
+      responses,
+      lastFMApi,
+      isDevelopment,
+      developmentUser,
+    }) => {
+      async function getLoggedUserFromSession() {
+        if (!browserUser.lastFMSession) throw responses.NOT_AUTHORIZED;
+
+        return {
+          // This assures the session is valid, if it isn't it will throw an error.
+          // This is safe, even though the user can mess with the cookies.
+          // Because even if the request sends a username instead of a session
+          // it won't get to here, since we are only accepting session cookies with
+          // the length of a valid session key, and usernames on lastfm are limited
+          // to 15 characters.
+          loggedUser: await lastFMApi.user.getInfo({
+            usernameOrSessionKey: isDevelopment
+              ? developmentUser
+              : browserUser.lastFMSession,
+          }),
+        };
+      }
+
+      return {
+        getLoggedUserFromSession,
+        async isUserSessionValid() {
+          try {
+            await getLoggedUserFromSession();
+            return true;
+          } catch (e) {
+            return false;
+          }
+        },
+      };
+    },
+  )
+  .as("plugin");
+
 const elysiaLoginHandler = new Elysia()
+  .use(elysiaLoginSessionHandler)
   .use(lastCommunityLayer)
   .derive(({ lastFMApi, db, nextRedirect }) => ({
     async handleLogin(usernameOrSessionKey: string) {
@@ -33,8 +77,10 @@ const elysiaLoginHandler = new Elysia()
       return nextRedirect();
     },
   }))
-  .onBeforeHandle(({ browserUser, nextRedirect }) => {
-    if (browserUser.lastFMSession) return nextRedirect();
+  .onBeforeHandle(async ({ isUserSessionValid, nextRedirect }) => {
+    if (!(await isUserSessionValid())) {
+      nextRedirect();
+    }
   })
   .post(
     "/login",

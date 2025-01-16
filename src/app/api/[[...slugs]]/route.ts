@@ -9,7 +9,7 @@ const elysiaApi = new Elysia({ prefix: "/api" })
     console.error({ error, code });
     return {
       code,
-      error: responses.INTERNAL_ERROR,
+      error: code == 404 ? responses.NOT_FOUND : responses.INTERNAL_ERROR,
     };
   });
 
