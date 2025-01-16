@@ -1,9 +1,11 @@
 import { Elysia } from "elysia";
 import { elysiaAuth } from "./auth";
 import { lastCommunityLayer } from "./utils";
+import { elysiaUser } from "./user";
 
 const elysiaApi = new Elysia({ prefix: "/api" })
   .use(elysiaAuth)
+  .use(elysiaUser)
   .use(lastCommunityLayer)
   .onError(({ error, code, responses }) => {
     console.error({ error, code });
