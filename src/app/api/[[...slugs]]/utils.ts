@@ -34,6 +34,7 @@ export const lastCommunityLayer = new Elysia()
     lastFMApi: {
       getUserInfo: memoize(lastFMApi.user.getInfo.bind(lastFMApi.user), {
         maxAge: Duration.minute(30).milliseconds,
+        cacheKey: (u) => u[0].username,
       }),
     },
   })
