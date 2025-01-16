@@ -10,22 +10,31 @@ import {
 } from "@/components/ui/drawer";
 import { VerifiedIcon, Menu, Music } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { cookies } from "next/headers";
-import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { Separator } from "@/components/ui/separator";
-import { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { HTMLProps, ReactNode } from "react";
+import { cn, getFullUrl } from "@/lib/utils";
+import { treaty } from "@elysiajs/eden";
+import { LastCommunityAPI } from "@/app/api/[[...slugs]]/route";
 
 type InnerNavProps = {
-  lastFMSession: RequestCookie | undefined;
+  lastFMSession: boolean;
 };
 
-function IconLabeledSpan({ Icon, text }: { Icon: ReactNode; text: string }) {
+function AuthButton({
+  Icon,
+  text,
+  ...formProps
+}: {
+  Icon: ReactNode;
+  text: string;
+} & HTMLProps<HTMLFormElement>) {
   return (
-    <>
-      {Icon}
-      <span>{text}</span>
-    </>
+    <form className="w-full" method="post" {...formProps}>
+      <Button type="submit" className="w-full">
+        {Icon}
+        <span>{text}</span>
+      </Button>
+    </form>
   );
 }
 
@@ -33,17 +42,13 @@ function NavContent({ lastFMSession }: InnerNavProps) {
   return (
     <>
       {lastFMSession ? (
-        <form action={"/api/auth/logout"} className="w-full" method="post">
-          <Button type="submit" className="w-full">
-            <IconLabeledSpan Icon={<Music />} text="Logout" />
-          </Button>
-        </form>
+        <AuthButton action="/api/auth/logout" Icon={<Music />} text="Logout" />
       ) : (
-        <form action={"/api/auth/login"} className="w-full" method="post">
-          <Button type="submit" className="w-full">
-            <IconLabeledSpan Icon={<Music />} text="Login with Last.FM" />
-          </Button>
-        </form>
+        <AuthButton
+          action="/api/auth/login"
+          Icon={<Music />}
+          text="Login with Last.FM"
+        />
       )}
     </>
   );
@@ -85,9 +90,9 @@ const NavDrawerLink = ({
 };
 
 export async function Navbar() {
-  const cookieStore = await cookies();
+  const { api } = treaty<LastCommunityAPI>(getFullUrl());
   const innerNavProps: InnerNavProps = {
-    lastFMSession: cookieStore.get("session"),
+    lastFMSession: !(await api.auth.validate_session.get()).error,
   };
 
   const authenticatedMenus: NavDrawerLinkProps[] = [
