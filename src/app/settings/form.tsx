@@ -103,6 +103,7 @@ export function SettingsForm({
 
   const currentFormValues = form.getValues();
 
+  // TODO: Get the user country from last.fm
   return (
     <Form {...form}>
       <form
