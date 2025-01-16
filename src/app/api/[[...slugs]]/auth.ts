@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import { Duration } from "ts-duration";
 import { lastCommunityUser } from "@/db/schema";
 import { sql } from "drizzle-orm";
-import { lastCommunityLayer } from "./utils";
+import { lastCommunityLayer, schemas } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 
 const elysiaLoginHandler = new Elysia()
@@ -17,11 +17,11 @@ const elysiaLoginHandler = new Elysia()
         await db
           .insert(lastCommunityUser)
           .values({
-            lastFMId: userInfo.name,
+            name: userInfo.name,
           })
           .onConflictDoUpdate({
-            set: { lastFMId: sql`excluded.last_fm_id` },
-            target: lastCommunityUser.lastFMId,
+            set: { name: sql`excluded.last_fm_id` },
+            target: lastCommunityUser.name,
           })
           .returning()
       )[0];
@@ -36,15 +36,18 @@ const elysiaLoginHandler = new Elysia()
   .onBeforeHandle(({ browserUser, nextRedirect }) => {
     if (browserUser.lastFMSession) return nextRedirect();
   })
-  .get("/login", async ({ nextRedirect, handleLogin, isDevelopment }) => {
-    if (isDevelopment) {
-      return await handleLogin("daishuuu");
-    }
+  .post(
+    "/login",
+    async ({ nextRedirect, handleLogin, developmentUser, isDevelopment }) => {
+      if (isDevelopment) {
+        return await handleLogin(developmentUser);
+      }
 
-    const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/save-session")}`;
-    return nextRedirect(lastFMOAuthURL);
-  })
-  .get(
+      const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/save-session")}`;
+      return nextRedirect(lastFMOAuthURL);
+    },
+  )
+  .post(
     "/save-session",
     async ({ handleLogin, lastFMApi, query, cookie }) => {
       const lastFMSession = await lastFMApi.auth.getSession(query.token);
@@ -61,7 +64,7 @@ const elysiaLoginHandler = new Elysia()
     },
     {
       query: t.Object({
-        token: t.String({ minLength: 32, maxLength: 32 }),
+        token: schemas.lastFMSessionKey,
       }),
     },
   );

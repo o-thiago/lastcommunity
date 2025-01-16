@@ -4,10 +4,14 @@ import Elysia, { t } from "elysia";
 import { NextResponse } from "next/server";
 import { getFullUrl } from "@/lib/utils";
 
+export const schemas = {
+  lastFMSessionKey: t.String({ maxLength: 32, minLength: 32 }),
+};
+
 export const lastCommunityLayer = new Elysia()
   .guard({
     cookie: t.Cookie({
-      session: t.Optional(t.String()),
+      session: t.Optional(schemas.lastFMSessionKey),
     }),
   })
   .derive(async ({ cookie }) => ({
@@ -33,5 +37,6 @@ export const lastCommunityLayer = new Elysia()
 
     return NextResponse.redirect(getFullUrl(url));
   })
+  .decorate("developmentUser", "daishuuu")
   .decorate("isDevelopment", process.env.NODE_ENV == "development")
   .as("plugin");

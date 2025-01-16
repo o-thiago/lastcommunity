@@ -5,7 +5,7 @@ const createdAt = () => ({
 });
 
 export const lastCommunityUser = pgTable("last_community_user", {
-  lastFMId: text("last_fm_id").primaryKey(),
+  name: text("last_fm_id").primaryKey(),
   state: text("state"),
   city: text("city"),
   ...createdAt(),
