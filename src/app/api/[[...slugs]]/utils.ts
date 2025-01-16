@@ -4,10 +4,16 @@ import Elysia, { t } from "elysia";
 import { NextResponse } from "next/server";
 import { getFullUrl } from "@/lib/utils";
 
+export const schemas = {
+  lastFMSessionKey: t.String({ maxLength: 32, minLength: 32 }),
+};
+
+const isDevelopment = process.env.NODE_ENV == "development";
+
 export const lastCommunityLayer = new Elysia()
   .guard({
     cookie: t.Cookie({
-      session: t.Optional(t.String()),
+      session: t.Optional(schemas.lastFMSessionKey),
     }),
   })
   .derive(async ({ cookie }) => ({
@@ -16,8 +22,9 @@ export const lastCommunityLayer = new Elysia()
     },
   }))
   .decorate("responses", {
-    NOT_AUTHORIZED: "Unauthorized",
-    INTERNAL_ERROR: "Internal server error",
+    NOT_AUTHORIZED: "Unauthorized.",
+    INTERNAL_ERROR: "Internal server error.",
+    NOT_FOUND: "Resource not found.",
   })
   .decorate("db", db)
   .decorate(
@@ -33,5 +40,7 @@ export const lastCommunityLayer = new Elysia()
 
     return NextResponse.redirect(getFullUrl(url));
   })
-
+  .decorate("developmentUser", "daishuuu")
+  .decorate("isDevelopment", isDevelopment)
+  .decorate("isTestMode", isDevelopment && Number(process.env.TEST_MODE) != 0)
   .as("plugin");
