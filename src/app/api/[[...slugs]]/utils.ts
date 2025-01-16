@@ -8,6 +8,8 @@ export const schemas = {
   lastFMSessionKey: t.String({ maxLength: 32, minLength: 32 }),
 };
 
+const isDevelopment = process.env.NODE_ENV == "development";
+
 export const lastCommunityLayer = new Elysia()
   .guard({
     cookie: t.Cookie({
@@ -39,5 +41,6 @@ export const lastCommunityLayer = new Elysia()
     return NextResponse.redirect(getFullUrl(url));
   })
   .decorate("developmentUser", "daishuuu")
-  .decorate("isDevelopment", process.env.NODE_ENV == "development")
+  .decorate("isDevelopment", isDevelopment)
+  .decorate("isTestMode", isDevelopment && Number(process.env.TEST_MODE) != 0)
   .as("plugin");

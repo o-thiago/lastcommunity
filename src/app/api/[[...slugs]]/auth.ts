@@ -5,7 +5,7 @@ import { sql } from "drizzle-orm";
 import { lastCommunityLayer, schemas } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 
-let isDevelopmentLoggedIn = false;
+let isTestModeLoggedIn = false;
 
 export const elysiaLoginSessionHandler = new Elysia()
   .use(lastCommunityLayer)
@@ -14,13 +14,13 @@ export const elysiaLoginSessionHandler = new Elysia()
       browserUser,
       responses,
       lastFMApi,
-      isDevelopment,
+      isTestMode,
       developmentUser,
     }) => {
       async function getLoggedUserFromSession() {
         if (
-          (!browserUser.lastFMSession && !isDevelopment) ||
-          (isDevelopment && !isDevelopmentLoggedIn)
+          (!browserUser.lastFMSession && !isTestMode) ||
+          (isTestMode && !isTestModeLoggedIn)
         ) {
           throw responses.NOT_AUTHORIZED;
         }
@@ -33,7 +33,7 @@ export const elysiaLoginSessionHandler = new Elysia()
           // the length of a valid session key, and usernames on lastfm are limited
           // to 15 characters.
           loggedUser: await lastFMApi.user.getInfo({
-            usernameOrSessionKey: isDevelopment
+            usernameOrSessionKey: isTestMode
               ? developmentUser
               : browserUser.lastFMSession,
           }),
@@ -91,10 +91,10 @@ const elysiaLoginHandler = new Elysia()
   })
   .post(
     "/login",
-    async ({ nextRedirect, handleLogin, developmentUser, isDevelopment }) => {
-      if (isDevelopment) {
+    async ({ nextRedirect, handleLogin, developmentUser, isTestMode }) => {
+      if (isTestMode) {
         return await handleLogin(developmentUser).finally(
-          () => (isDevelopmentLoggedIn = true),
+          () => (isTestModeLoggedIn = true),
         );
       }
 
@@ -133,7 +133,7 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
   })
   .post("logout", async ({ cookie, nextRedirect }) => {
     cookie.session.remove();
-    isDevelopmentLoggedIn = false;
+    isTestModeLoggedIn = false;
 
     return nextRedirect();
   });
