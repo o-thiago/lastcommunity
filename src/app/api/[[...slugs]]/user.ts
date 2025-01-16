@@ -27,6 +27,15 @@ export const elysiaUser = new Elysia({ prefix: "/user" })
   .derive(
     async ({ getLoggedUserFromSession }) => await getLoggedUserFromSession(),
   )
+  .get("/settings", async ({ loggedUser, db }) => {
+    return await db.query.lastCommunityUser.findFirst({
+      where: (users, { eq }) => eq(users.name, loggedUser.name),
+      columns: {
+        state: true,
+        city: true,
+      },
+    });
+  })
   .post(
     "/settings",
     async ({ body, db, loggedUser }) => {
