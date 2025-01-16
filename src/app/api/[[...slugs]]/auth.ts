@@ -3,17 +3,14 @@ import { Duration } from "ts-duration";
 import { lastCommunityUser } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { lastCommunityLayer } from "./utils";
+import { getFullUrl } from "@/lib/utils";
 
-export const elysiaAuth = new Elysia({ prefix: "/auth" })
+export const elysiaLoginHandler = new Elysia()
   .use(lastCommunityLayer)
-  .get(
-    "/login",
-    async ({ query, cookie, browserUser, lastFMApi, db, nextRedirect }) => {
-      if (browserUser.lastFMSession) return nextRedirect();
-
-      const lastFMSession = await lastFMApi.auth.getSession(query.token);
+  .derive(({ lastFMApi, db, nextRedirect }) => ({
+    async handleLogin(usernameOrSessionKey: string) {
       const userInfo = await lastFMApi.user.getInfo({
-        usernameOrSessionKey: lastFMSession.key,
+        usernameOrSessionKey,
       });
 
       const storedUser = (
@@ -29,6 +26,30 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
           .returning()
       )[0];
 
+      if (!storedUser.city || !storedUser.state) {
+        return nextRedirect("/settings");
+      }
+
+      return nextRedirect();
+    },
+  }))
+  .onBeforeHandle(({ browserUser, nextRedirect }) => {
+    if (browserUser.lastFMSession) return nextRedirect();
+  })
+  .get("/login", async ({ nextRedirect, handleLogin, isDevelopment }) => {
+    if (isDevelopment) {
+      return await handleLogin("daishuuu");
+    }
+
+    const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/save-session")}`;
+    return nextRedirect(lastFMOAuthURL);
+  })
+  .get(
+    "/save-session",
+    async ({ handleLogin, lastFMApi, query, cookie }) => {
+      const lastFMSession = await lastFMApi.auth.getSession(query.token);
+      const response = await handleLogin(lastFMSession.key);
+
       cookie.session.set({
         value: lastFMSession.key,
         httpOnly: true,
@@ -36,22 +57,19 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
         maxAge: Duration.hour(24 * 30).seconds,
       });
 
-      if (!storedUser.city || !storedUser.state) {
-        return nextRedirect("/settings");
-      }
-
-      return nextRedirect();
+      return response;
     },
     {
       query: t.Object({
-        token: t.String(),
+        token: t.String({ minLength: 32, maxLength: 32 }),
       }),
     },
-  )
-  .post("logout", async ({ cookie, browserUser, nextRedirect }) => {
-    if (browserUser.lastFMSession) {
-      cookie.session.remove();
-    }
+  );
 
+export const elysiaAuth = new Elysia({ prefix: "/auth" })
+  .use(lastCommunityLayer)
+  .use(elysiaLoginHandler)
+  .get("logout", async ({ cookie, nextRedirect }) => {
+    cookie.session.remove();
     return nextRedirect();
   });

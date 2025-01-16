@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button, ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerHeader,
@@ -14,9 +14,7 @@ import { cookies } from "next/headers";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { Separator } from "@/components/ui/separator";
 import { ReactNode } from "react";
-import { cn, getFullUrl } from "@/lib/utils";
-
-const lastFMOAuthURL = `http://www.last.fm/api/auth/?api_key=${process.env.LASTFM_API}&cb=${getFullUrl("api/auth/login")}`;
+import { cn } from "@/lib/utils";
 
 type InnerNavProps = {
   lastFMSession: RequestCookie | undefined;
@@ -42,7 +40,7 @@ function NavContent({ lastFMSession }: InnerNavProps) {
         </form>
       ) : (
         <Button asChild>
-          <Link href={lastFMOAuthURL}>
+          <Link href={"/api/auth/login"}>
             <IconLabeledSpan text="Login with Last.fm" Icon={<Music />} />
           </Link>
         </Button>

@@ -33,5 +33,5 @@ export const lastCommunityLayer = new Elysia()
 
     return NextResponse.redirect(getFullUrl(url));
   })
-
+  .decorate("isDevelopment", process.env.NODE_ENV == "development")
   .as("plugin");
