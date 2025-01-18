@@ -78,6 +78,7 @@ export function SettingsForm({
   previousValues: { state, city },
 }: {
   previousValues: UserSettingSchema;
+  formSettingsUserData: FormSettingsUserData;
 }) {
   const { toast } = useToast();
 
@@ -112,9 +113,14 @@ export function SettingsForm({
       >
         <SettingsField
           formControl={form.control}
-          currentValue={State.getStateByCodeAndCountry(state, "BR")?.name || ""}
+          currentValue={
+            State.getStateByCodeAndCountry(state, formSettingsUserData.country)
+              ?.name || ""
+          }
           name="state"
-          geoObjects={State.getStatesOfCountry("BR").map(({ name, ...s }) => ({
+          geoObjects={State.getStatesOfCountry(
+            formSettingsUserData.country,
+          ).map(({ name, ...s }) => ({
             name,
             code: s.isoCode,
           }))}
@@ -123,9 +129,10 @@ export function SettingsForm({
           formControl={form.control}
           currentValue={currentFormValues.city}
           name="city"
-          geoObjects={City.getCitiesOfState("BR", currentFormValues.state).map(
-            ({ name }) => ({ name, code: name }),
-          )}
+          geoObjects={City.getCitiesOfState(
+            formSettingsUserData.country,
+            currentFormValues.state,
+          ).map(({ name }) => ({ name, code: name }))}
           disabled={currentFormValues.state == ""}
         />
         <Button type="submit" className="w-full">

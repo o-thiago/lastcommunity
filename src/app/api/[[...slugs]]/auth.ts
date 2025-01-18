@@ -5,7 +5,6 @@ import { sql } from "drizzle-orm";
 import { lastCommunityLayer } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 import { elysiaSchemas } from "./schemas";
-import memoize from "memoize";
 
 let isTestModeLoggedIn = false;
 
@@ -15,9 +14,9 @@ export const elysiaLoginSessionHandler = new Elysia()
     async ({
       browserUser,
       responses,
-      memoize,
       isTestMode,
       developmentUser,
+      lastFMApi,
     }) => {
       async function getLoggedUserFromSession() {
         if (
@@ -34,7 +33,7 @@ export const elysiaLoginSessionHandler = new Elysia()
           // it won't get to here, since we are only accepting session cookies with
           // the length of a valid session key, and usernames on lastfm are limited
           // to 15 characters.
-          loggedUser: await memoize.lastFMApi.getUserInfo({
+          loggedUser: await lastFMApi.user.getInfo({
             usernameOrSessionKey: isTestMode
               ? developmentUser
               : browserUser.lastFMSession,
@@ -60,9 +59,9 @@ export const elysiaLoginSessionHandler = new Elysia()
 const elysiaLoginHandler = new Elysia()
   .use(elysiaLoginSessionHandler)
   .use(lastCommunityLayer)
-  .derive(({ memoize, db, nextRedirect }) => ({
+  .derive(({ db, nextRedirect, lastFMApi }) => ({
     async handleLogin(usernameOrSessionKey: string) {
-      const userInfo = await memoize.lastFMApi.getUserInfo({
+      const userInfo = await lastFMApi.user.getInfo({
         usernameOrSessionKey,
       });
 
