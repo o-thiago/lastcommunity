@@ -45,13 +45,10 @@ export const elysiaUser = new Elysia({ prefix: "/user" })
   .post(
     "/settings",
     async ({ body, db, loggedUser }) => {
-      const { city, state } = deepReplaceDefaultsToUndefined(body);
+      const updateData = deepReplaceDefaultsToUndefined(body);
       await db
         .update(lastCommunityUser)
-        .set({
-          city,
-          state,
-        })
+        .set(updateData)
         .where(eq(lastCommunityUser.name, loggedUser.name));
     },
     {
