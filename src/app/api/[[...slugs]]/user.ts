@@ -8,9 +8,15 @@ import { elysiaSchemas } from "./schemas";
 const isRecord = (o: unknown): o is Record<PropertyKey, unknown> =>
   typeof o == "object";
 
+type DeeplyUndefinable<T> = {
+  [K in keyof T]: T[K] extends Record<PropertyKey, unknown>
+    ? DeeplyUndefinable<T[K]>
+    : T[K] | undefined;
+};
+
 function deepReplaceDefaultsToUndefined<T extends Record<PropertyKey, unknown>>(
   object: T,
-): T {
+): DeeplyUndefinable<T> {
   for (const key in Object.entries(object)) {
     if (isRecord(object[key])) {
       deepReplaceDefaultsToUndefined(object[key]);
@@ -18,7 +24,7 @@ function deepReplaceDefaultsToUndefined<T extends Record<PropertyKey, unknown>>(
       object[key] = undefined;
     }
   }
-  return object;
+  return object as DeeplyUndefinable<T>;
 }
 
 export const elysiaUser = new Elysia({ prefix: "/user" })
