@@ -5,8 +5,12 @@ import { sql } from "drizzle-orm";
 import { lastCommunityLayer } from "./utils";
 import { getFullUrl } from "@/lib/utils";
 import { elysiaSchemas } from "./schemas";
+import LastFMUser from "lastfm-typed/dist/interfaces/userInterface";
+import { Country } from "country-state-city";
 
 let isTestModeLoggedIn = false;
+
+export type LoggedUser = LastFMUser.getInfo;
 
 export const elysiaLoginSessionHandler = new Elysia()
   .use(lastCommunityLayer)
@@ -26,6 +30,18 @@ export const elysiaLoginSessionHandler = new Elysia()
           throw responses.NOT_AUTHORIZED;
         }
 
+        const loggedUser = await lastFMApi.user.getInfo({
+          usernameOrSessionKey: isTestMode
+            ? developmentUser
+            : browserUser.lastFMSession,
+        });
+
+        const lastCommunityCountry = Country.getAllCountries().filter(
+          (c) => c.name.toLowerCase() == loggedUser.country.toLowerCase(),
+        )[0];
+
+        loggedUser.country = lastCommunityCountry?.isoCode ?? null;
+
         return {
           // This assures the session is valid, if it isn't it will throw an error.
           // This is safe, even though the user can mess with the cookies.
@@ -33,11 +49,7 @@ export const elysiaLoginSessionHandler = new Elysia()
           // it won't get to here, since we are only accepting session cookies with
           // the length of a valid session key, and usernames on lastfm are limited
           // to 15 characters.
-          loggedUser: await lastFMApi.user.getInfo({
-            usernameOrSessionKey: isTestMode
-              ? developmentUser
-              : browserUser.lastFMSession,
-          }),
+          loggedUser,
         };
       }
 
@@ -131,6 +143,9 @@ export const elysiaAuth = new Elysia({ prefix: "/auth" })
   .use(elysiaLoginSessionHandler)
   .get("/validate_session", async ({ isUserSessionValid, responses }) => {
     if (!(await isUserSessionValid())) throw responses.NOT_AUTHORIZED;
+  })
+  .get("/logged_user", async ({ getLoggedUserFromSession }) => {
+    return (await getLoggedUserFromSession()).loggedUser;
   })
   .post("logout", async ({ cookie, nextRedirect }) => {
     cookie.session.remove();

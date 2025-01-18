@@ -3,6 +3,7 @@ import { SettingsForm } from "./form";
 
 export default async function Settings() {
   const { data } = await api.user.settings.get();
+  const { data: loggedUser } = await api.auth.logged_user.get();
 
   return (
     <div className="flex items-center justify-center h-screen">
@@ -12,7 +13,7 @@ export default async function Settings() {
             Change your settings
           </h2>
         </div>
-        <SettingsForm previousValues={data} />
+        <SettingsForm previousValues={data} loggedUser={loggedUser} />
       </div>
     </div>
   );

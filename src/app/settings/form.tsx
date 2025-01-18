@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select";
 import { SelectProps, SelectValueProps } from "@radix-ui/react-select";
 import { useEffect } from "react";
+import { LoggedUser } from "../api/[[...slugs]]/auth";
+import { log } from "console";
 
 type UserSettingSchema = Static<typeof elysiaSchemas.users.settings>;
 
@@ -76,9 +78,10 @@ function SettingsField<T extends { name: string; code: string }>({
 
 export function SettingsForm({
   previousValues: { state, city },
+  loggedUser,
 }: {
   previousValues: UserSettingSchema;
-  formSettingsUserData: FormSettingsUserData;
+  loggedUser: LoggedUser;
 }) {
   const { toast } = useToast();
 
@@ -104,7 +107,6 @@ export function SettingsForm({
 
   const currentFormValues = form.getValues();
 
-  // TODO: Get the user country from last.fm
   return (
     <Form {...form}>
       <form
@@ -114,23 +116,23 @@ export function SettingsForm({
         <SettingsField
           formControl={form.control}
           currentValue={
-            State.getStateByCodeAndCountry(state, formSettingsUserData.country)
-              ?.name || ""
+            State.getStateByCodeAndCountry(state, loggedUser.country)?.name ||
+            ""
           }
           name="state"
-          geoObjects={State.getStatesOfCountry(
-            formSettingsUserData.country,
-          ).map(({ name, ...s }) => ({
-            name,
-            code: s.isoCode,
-          }))}
+          geoObjects={State.getStatesOfCountry(loggedUser.country).map(
+            ({ name, ...s }) => ({
+              name,
+              code: s.isoCode,
+            }),
+          )}
         />
         <SettingsField
           formControl={form.control}
           currentValue={currentFormValues.city}
           name="city"
           geoObjects={City.getCitiesOfState(
-            formSettingsUserData.country,
+            loggedUser.country,
             currentFormValues.state,
           ).map(({ name }) => ({ name, code: name }))}
           disabled={currentFormValues.state == ""}
